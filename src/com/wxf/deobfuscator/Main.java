@@ -13,30 +13,33 @@ public class Main extends AppBase{
 	static String dstRoot = null;
 	static String dotSmali = ".smali";
 	//
-	static ArrayList<String> fileList 			= new ArrayList<String>();
 	static HashMap<String, String> fileMap		= new HashMap<String, String>();		// filename, clz
-	static ArrayList<String> dirList			= new ArrayList<String>();
-	static HashMap<String, String> dirMap		= new HashMap<String, String>();		// filename, dir
+	static HashMap<String, String> pkgMap		= new HashMap<String, String>();		// package
 	static HashMap<String, String> clzMap		= new HashMap<String, String>();		// clz, filename
 	static HashMap<String, String> contentMap	= new HashMap<String, String>();		// clz, content
+	static HashMap<String, String> newPkgMap	= new HashMap<String, String>();		// new package, pkg, for UTF8 replace
 	static HashMap<String, String> newClzMap	= new HashMap<String, String>();		// clz, newClz
+	static HashMap<String, String> subClzMap	= new HashMap<String, String>();		// clz, newClz
+	static HashMap<String, String> newSubClzMap	= new HashMap<String, String>();		// newClz, clz
+	static String usage = "usage: deobufscator <smali path>\n";
 	
 	public static void main(String [] args) throws Exception{
-		srcRoot = "/Users/xuefeiwu/Projects/guda/eclipse/workspace_ad/oppo_mobad_demo_329_fix_ab_context/doc/smali";
+		if(args.length == 0) {
+			println(usage);
+			return;
+		}
+		srcRoot = args[0];
 		dstRoot = srcRoot + "_new";
-		
 		searchDir(srcRoot);
 		println("fileMap.size()="+fileMap.size());
-		println("fileList.size="+fileList.size());
-		println("dirList.size="+dirList.size());
-		println("dirMap.size="+dirMap.size());
+		println("pkgMap.size="+pkgMap.size());
 		println("clzMap.size="+clzMap.size());
 		
 		readAll();
 		println("contentMap.size="+contentMap.size());
     	renameAll();
-    	replaceAll();
-		println("newClzMap.size="+newClzMap.size());
+    	println("newClzMap.size="+newClzMap.size());
+//    	replaceAll();
 //    	writeAll();
     	
 		println("All done!");
@@ -45,7 +48,7 @@ public class Main extends AppBase{
 	 * read all files in fileList
 	 */
 	static void readAll() {
-		for(String fullpath:fileList) {
+		for(String fullpath:fileMap.keySet()) {
 			String clz = fileMap.get(fullpath);// fullpath.substring(srcRoot.length(), fullpath.length() - 6);
 	    	File f = new File(fullpath);	//srcRoot, clz + dotSmali);
 	    	String content = readTextFile(f);
@@ -57,16 +60,25 @@ public class Main extends AppBase{
 
 	/*
 	 * rename the class files that have dup name with dir
-	 * 
+	 * rename UTF-8 char to ASCII
 	 */
     static void renameAll() {
-		for(String pkg:dirList) {
+		for(String pkg:pkgMap.keySet()) {
 			if(clzMap.containsKey(pkg)) {
-				rename(pkg);
+		    	String newClzName = newClzName(pkg);
+	
+		    	newClzMap.put(pkg, newClzName);
 			}
 		}
+		
+		for(String clz:clzMap.keySet()) {
+	    	String newClzName = newClzNameRemoveUTF8(clz);
+	    	if(!clz.equals(newClzName)) {
+//	    		newClzMap.put(clz, newClzName);
+	    	}
+		}
     }
-    /*
+	/*
      * replace old clz with new clz
      * 
      * ps: for read map list from disk
@@ -77,7 +89,7 @@ public class Main extends AppBase{
         		String newClzName = newClzMap.get(clzName);
 	        	String tag = clzName + ";";
 	        	String newTag = newClzName + ";";
-	        	for(String fn:fileList) {
+	        	for(String fn:fileMap.keySet()) {
 	        		String clz = fileMap.get(fn);
 		        	String content = contentMap.get(clz);
 		        	if(content == null) {
@@ -103,7 +115,7 @@ public class Main extends AppBase{
      */
     static void writeAll() {
         try{
-        	for(String fn : fileList) {
+        	for(String fn : fileMap.keySet()) {
         		String clz = fileMap.get(fn);
 		    	String newClzName = clz;
 		    	if(newClzMap.containsKey(clz))
@@ -136,64 +148,127 @@ public class Main extends AppBase{
     		if(srcFile.isDirectory()) {
     			String clz = fullpath.substring(srcRoot.length()+1);
     			clz = clz.replace("\\", "/");
-//    			println("dir: " + clz);
-    			dirMap.put(clz, clz);
-    			dirList.add(clz);
+    			pkgMap.put(clz, clz);
     			searchDir(fullpath);
     		}
     		else if(fullpath.endsWith(dotSmali)) {
     			String clz = fullpath.substring(srcRoot.length() + 1, fullpath.length() - 6);
     			clz = clz.replace("\\", "/");
-    			fileList.add(fullpath);
     			fileMap.put(fullpath, clz);
-//    			println("clz: " + clz);
     			clzMap.put(clz, fullpath);
     		}
     	}
     }
+
     /*
-     * rename the smali file and replace all references
+     * generate new class name
+     * 
+     * todo: support dir name in UTF-8  
      */
-    static void rename(String clzName){
-    	String newClzName = clzName + "_1";
-		println("rename: "+clzName + "\t-> " + newClzName);
-		if(dirMap.containsKey(newClzName)) {
-			println("");
-		}
-
-        try{
-        	String tag = clzName + ";";
-        	String newTag = newClzName + ";";
-        	newClzMap.put(clzName, newClzName);
-//        	for(String fn:fileList) {
-//        		String clz = fileMap.get(fn);
-//	        	String content = contentMap.get(clz);
-//	        	if(content == null) {
-//	        		println("content is null, "+clz);
-//	        		return;
-//	        	}
-//	        	String newContent = content;
-//	        	if(content.contains(tag)) {
-//	        		println("replacing ["+tag+"] to ["+newTag+"] for " + clz);
-//	        		newContent = content.replace(tag, newTag);
-//	        	}
-//	        	contentMap.put(clz, newContent);
-//        	}
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-	static String getNewName(int count) {
+	static String newClzName(String clzName) {
     	String n = "";
-    	do{
-    		if(n.length() > 0)count--;
-    		int c = count % 26;
-    		n = String.valueOf((char)('a' +c)) + n;
-    		count = count / 26;
-    	}while(count >0);
+    	for(int i=1;i<1000000 && clzMap.containsKey((n = clzName + "_" + i));i++);
+    	
+    	println("rename: "+clzName + "\t-> " + n);
     	return n;
     }
+	
+	static boolean isASCII(char c) {
+		if((c>='a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <='9') || c == '_' || c == '$' || c == '/') {
+			return true;
+		}
+		return false;
+	}
+	static boolean isASCII(String s) {
+    	for(int i=0;i<s.length();i++) {
+    		char c = s.charAt(i);
+    		if((c>='a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <='9') || c == '_' || c == '$' || c == '/') {
+    		}
+    		else {
+    			return false;
+    		}
+    	}
+    	return true;
+	}
+    /*
+     * remove the UTF-8 char in class name
+     * 
+     */
+    private static String newClzNameRemoveUTF8(String clzName) {
+    	if(isASCII(clzName)) {
+    		return clzName;
+    	}
+    	String[] ss = clzName.split("/");
+    	String clz = ss[ss.length -1];
+    	String pkg = "";
+    	for(int i=0;i<ss.length-1;i++) {
+    		String newPkg = pkg + ss[i] + "/";
+    		if(!isASCII(ss[i])) {
+	    		if(newPkgMap.containsKey(newPkg)) {
+	    			pkg = newPkgMap.get(newPkg);
+	    		}
+	    		else {
+	    			for(int n = 0;n<10000;n++) {
+	    				String newPkg2 = pkg + base26(n);
+	    				if(!newPkgMap.containsKey(newPkg2)) {
+	    					newPkgMap.put(newPkg2, newPkg);
+	    					pkg = newPkg2;
+	    					break;
+	    				}
+	    			}
+	    		}
+    		}
+    		else {
+    			pkg = newPkg;
+    		}
+    	}
+    	ss = clz.split("\\$");
+    	//clz = pkg + clz;
+    	String clz2 = pkg;
+    	for(int i=0;i<ss.length;i++) {
+    		if(i > 0)
+    			clz2 += "$"; 
+    		String newClz = clz2 + ss[i];
+    		if(!isASCII(ss[i])) {
+	    		if(subClzMap.containsKey(newClz)) {
+	    			clz2 = subClzMap.get(newClz);
+	    		}
+	    		else {
+	    			for(int n = 0;n<10000;n++) {
+	    				String newClz2 = clz2 + base26(n);
+	    				if(!newSubClzMap.containsKey(newClz2) && !clzMap.containsKey(newClz2) && !pkgMap.containsKey(newClz2)) {
+	    					subClzMap.put(newClz, newClz2);
+	    					newSubClzMap.put(newClz2, clzName);
+	    					clz2 = newClz2;
+	    					break;
+	    				}
+	    			}
+	    		}
+    		}
+    		else {
+    			clz2 = newClz;
+    		}
+    	}
+    	clz = clz2;
+		if(!clzMap.containsKey(clz) && !newClzMap.containsKey(clz)) {
+			newClzMap.put(clzName, clz);
+		}
+		else {
+			println("need fix");
+		}
+    	
+		println("rename: "+clzName + "\t-> " + clz);
+		return clz;
+	}
     
+	private static String base26(int n) {
+		String v = "";
+		do {
+			char c = (char) ('a' + n % 26);
+			n = n / 26 - 1;
+			v = c + v;
+		}while(n>=0);
+		return v;
+	}
+
 }

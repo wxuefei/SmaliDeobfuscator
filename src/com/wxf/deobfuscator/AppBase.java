@@ -121,5 +121,11 @@ public class AppBase {
 	protected synchronized static void println(String s) {
     	System.out.println(s);		
 	}
+	protected synchronized static void p(String s) {
+    	System.out.print(s);		
+	}
+	protected synchronized static void pln(String s) {
+    	System.out.println(s);		
+	}
 
 }
