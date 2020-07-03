@@ -39,8 +39,8 @@ public class Main extends AppBase{
 		println("contentMap.size="+contentMap.size());
     	renameAll();
     	println("newClzMap.size="+newClzMap.size());
-//    	replaceAll();
-//    	writeAll();
+    	replaceAll();
+    	writeAll();
     	
 		println("All done!");
     }
