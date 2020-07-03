@@ -10,4 +10,4 @@ A simple smali deobfuscator
 2) rename the smali files with mapping list
 
 # Notes
-1) There has a issue in Mac OSX, the filesystem will convert \[ ʹ \](0xb4cd ) & \[ ʹ \](0xb9ca) to the same UTF8 char 0x02b9 \[ ʹ \], 
+1) There has a issue in Mac OSX, the filesystem will convert \[ ʹ \](0xb4cd ) & \[ ʹ \](0xb9ca) to the same UTF8 char \[ ʹ \](0x02b9), 
