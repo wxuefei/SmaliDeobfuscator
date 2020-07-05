@@ -1,13 +1,13 @@
 # SmaliDeobfuscator
-A simple smali deobfuscator
+A simple smali deobfuscator to process the conflicts of same class and package names.
 
 # Purpose
-1) rename the smali files that have dup name with dir
-2) rename the smali files that name have UTF-8 char
+1) rename the smali files that confilicts with dir<br>
+2) rename the smali files that filename have UTF-8 char
 
 # Todo
-1) remove the UTF-8 char in field & method name
+1) rename the field's name & method's that have UTF-8 char<br>
 2) rename the smali files with mapping list
 
 # Notes
-1) There has a issue in Mac OSX, the filesystem will convert \[ ʹ \](0xb4cd ) & \[ ʹ \](0xb9ca) to the same UTF8 char \[ ʹ \](0x02b9), 
+1) There has a issue in Mac OSX, the filesystem will convert \[ ʹ \](0xb4cd ) and \[ ʹ \](0xb9ca) to the same UTF8 char \[ ʹ \](0x02b9), 
