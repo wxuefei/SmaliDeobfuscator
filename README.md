@@ -2,7 +2,7 @@
 A simple smali deobfuscator to process the conflicts of same class and package names.
 
 # Purpose
-1) rename the smali files that confilicts with dir<br>
+1) rename the smali files that confilicts with dir
 2) rename the smali files that filename have UTF-8 char
 
 # Todo
@@ -10,11 +10,9 @@ A simple smali deobfuscator to process the conflicts of same class and package n
 2) rename the smali files with mapping list
 
 # Notes
-1) There has a issue in Mac OSX, the filesystem will convert \[ ʹ \](0xb4cd ) and \[ ʹ \](0xb9cb) to the same UTF8 char \[ ʹ \](0x02b9).
+1) There has a issue in Mac OSX, the filesystem will convert \[ ʹ \](0xb4cd ) and \[ ʹ \](0xb9cb) to the same UTF8 char \[ ʹ \](0x02b9).
 
-# Changelogs
+# Change logs
 2020-07-06
-1)read real class from smali code. 
-2)added patch to baksmali for duplicate filename issue under Mac OSX
-
-   
+1) read real class from smali code.
+2) added patch to baksmali for duplicate filename issue under Mac OSX
