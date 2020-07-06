@@ -53,11 +53,35 @@ public class Main extends AppBase{
 	    	File f = new File(fullpath);	//srcRoot, clz + dotSmali);
 	    	String content = readTextFile(f);
 	    	if(content != null) {
+	    		String clzName = readClassNameFromSmali(fullpath, content);
+	    		if(clzName != null && !clz.equals(clzName)) {
+	    			println("The class name mismatch with filename. It'll replace " + clz +" with real class name "+ clzName);
+	    			fileMap.put(fullpath, clzName);
+	    			clzMap.remove(clz);
+	    			clzMap.put(clzName, fullpath);
+	    			clz = clzName;
+	    		}
 	    		contentMap.put(clz, content);
 	    	}
 		}
 	}
 
+	/*
+	 * read class name from first line of smali code
+	 * 
+	 */
+	private static String readClassNameFromSmali(String fn, String content) {
+		if(content.startsWith(".class")) {
+			int s = content.indexOf('L');
+			int e = content.indexOf(';');
+			if(e > s){
+				String clzName = content.substring(s+1, e);
+				return clzName;
+			}
+		}
+		println("not found class name in " + fn);
+		return null;
+	}
 	/*
 	 * rename the class files that have dup name with dir
 	 * rename UTF-8 char to ASCII
@@ -74,7 +98,7 @@ public class Main extends AppBase{
 		for(String clz:clzMap.keySet()) {
 	    	String newClzName = newClzNameRemoveUTF8(clz);
 	    	if(!clz.equals(newClzName)) {
-//	    		newClzMap.put(clz, newClzName);
+	    		newClzMap.put(clz, newClzName);
 	    	}
 		}
     }
@@ -98,7 +122,9 @@ public class Main extends AppBase{
 		        	}
 		        	String newContent = content;
 		        	if(content.contains(tag)) {
-		        		println("replacing ["+tag+"] to ["+newTag+"] for " + clz);
+		        		String newClz = "";
+		        		if(newClzMap.containsKey(clz))newClz = newClzMap.get(clz);
+		        		println("replacing ["+tag+"] with ["+newTag+"] for " + clz + ", " + newClz);
 		        		newContent = content.replace(tag, newTag);
 		        	}
 		        	contentMap.put(clz, newContent);
